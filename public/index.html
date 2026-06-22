@@ -111,8 +111,7 @@
       <button id="btnNextHand" class="btn-small">下一局</button>
       <button id="btnEndGame" class="btn-small btn-danger">结束游戏</button>
       <button id="btnRebuy" class="btn-small">重购筹码</button>
-      <button id="btnBorrow" class="btn-small">借一手</button>
-      <button id="btnLoanRecords" class="btn-small">借条</button>
+      <button id="btnRebuyHistory" class="btn-small">购买记录</button>
       <button id="btnLeave" class="btn-small btn-danger">离开</button>
      </div>
    </div>
@@ -133,34 +132,18 @@
   </div>
 </div>
 
-<!-- ====== BORROW MODAL ====== -->
-<div id="borrowModal" class="modal-overlay hidden">
-  <div class="modal-content">
-    <h3>借一手</h3>
-    <div id="borrowPlayerPanel">
-      <label>向谁借 <select id="borrowLender"></select></label>
-      <label>金额 <input type="number" id="borrowPlayerAmount" value="500" min="10" step="10"></label>
-      <button id="btnBorrowFromPlayer" class="btn-confirm">确认借入</button>
-    </div>
-    <button id="btnBorrowCancel" class="btn-cancel">取消</button>
-  </div>
-</div>
-
-<!-- ====== LOAN RECORDS PANEL ====== -->
-<div id="loanPanel" class="loan-panel-overlay hidden">
+<!-- ====== REBUY HISTORY ====== -->
+<div id="rebuyPanel" class="loan-panel-overlay hidden">
   <div class="loan-panel">
     <div class="loan-header">
-      <h3>借条记录</h3>
-      <button id="btnLoanClose">✕</button>
+      <h3>购买记录</h3>
+      <button id="btnRebuyClose">✕</button>
     </div>
-    <div id="loanList" class="loan-list">
-      <div class="loan-empty">暂无借款记录</div>
+    <div id="rebuyList" class="loan-list">
+      <div class="loan-empty">暂无购买记录</div>
     </div>
   </div>
 </div>
-
-<script src="/socket.io/socket.io.js"></script>
-<script src="script.js?v=5"></script>
 
 <!-- ====== GAME SUMMARY ====== -->
 <div id="gameSummary" class="summary-overlay hidden">

@@ -149,45 +149,9 @@
   if (endBtn) endBtn.style.display = isHost && state.gameStarted && !state.gameEnded ? '' : 'none';
 
 // ---------- Borrow & Loan Records ----------
-function showBorrowModal() {
-  if (!currentState || !currentState.players) return;
-  const _avail = currentState.players.filter(p => p.id !== playerId && p.connected && p.chips > 0);
-  if (_avail.length === 0) { alert("没有可借的玩家"); return; }
-  document.getElementById("borrowModal").classList.remove("hidden");
-  const sel = document.getElementById("borrowLender");
-  sel.innerHTML = _avail.map(p => "\u003coption value=\u005c"" + p.id + "\u005c"\u003e" + p.name + " ($" + p.chips + ")\u003c/option\u003e").join("");
-}
 
-function hideBorrowModal() {
-  document.getElementById("borrowModal").classList.add("hidden");
-}
 
-function showLoanRecords() {
-  if (!currentState) return;
-  const panel = document.getElementById("loanPanel");
-  panel.classList.remove("hidden");
-  const list = document.getElementById("loanList");
-  const loans = currentState.loans || [];
-  if (loans.length === 0) {
-    list.innerHTML = "<div class=\"loan-empty\">暂无借款记录</div>";
-    return;
-  }
-  list.innerHTML = loans.slice().reverse().map(l => {
-    const t = new Date(l.time);
-    const ts = t.getHours().toString().padStart(2,"0") + ":" + t.getMinutes().toString().padStart(2,"0");
-    if (l.type === "pool") {
-      return `<div class="loan-item"><span class="loan-amount">${l.playerName}</span> 从筹码池借入 <span class="loan-amount">${l.amount}</span><span class="loan-time">${ts}</span></div>`;
-    } else if (l.type === "player") {
-      return `<div class="loan-item"><span class="loan-amount">${l.toName}</span> 向 <span class="loan-amount">${l.fromName}</span> 借入 <span class="loan-amount">${l.amount}</span><span class="loan-time">${ts}</span></div>`;
-    } else if (l.type === "rebuy") {
-      return `<div class="loan-item"><span class="loan-amount">${l.playerName}</span> 重购 <span class="loan-amount">${l.amount}</span> 筹码<span class="loan-time">${ts}</span></div>`;
-    }
-  }).join("");
-}
 
-function hideLoanRecords() {
-  document.getElementById("loanPanel").classList.add("hidden");
-}
 
  }
  
@@ -363,7 +327,31 @@ function hideLoanRecords() {
    }
  }
  
- // ---------- User Actions ----------
+ 
+function showRebuyHistory() {
+  if (!currentState || !currentState.loans) return;
+  const panel = document.getElementById("rebuyPanel");
+  panel.classList.remove("hidden");
+  const list = document.getElementById("rebuyList");
+  const rebuys = currentState.loans.filter(l => l.type === "rebuy");
+  if (rebuys.length === 0) {
+    list.innerHTML = "<div class=\"loan-empty\">暂无购买记录</div>";
+    return;
+  }
+  const total = rebuys.reduce((s, l) => s + l.amount, 0);
+  list.innerHTML = "<div style=\"padding:8px 0;border-bottom:1px solid rgba(255,255,255,.1);margin-bottom:8px\"><strong>\u5171\u8d2d\u4e70: " + total + "</strong></div>" +
+    rebuys.slice().reverse().map(l => {
+      const t = new Date(l.time);
+      const ts = t.getHours().toString().padStart(2,"0") + ":" + t.getMinutes().toString().padStart(2,"0");
+      return "<div class=\"loan-item\">" + l.playerName + " \u91cd\u8d2d <span class=\"loan-amount\">" + l.amount + "</span><span class=\"loan-time\">" + ts + "</span></div>";
+    }).join("");
+}
+
+function hideRebuyHistory() {
+  document.getElementById("rebuyPanel").classList.add("hidden");
+}
+
+// ---------- User Actions ----------
  function renderSummary(data) {
   const body = document.getElementById('summaryBody');
   if (!body || !data) return;
@@ -442,6 +430,9 @@ function selectWinner(pid) {
   });
 
  
+  document.getElementById("btnRebuyHistory").addEventListener("click", showRebuyHistory);
+  document.getElementById("btnRebuyClose").addEventListener("click", hideRebuyHistory);
+
    document.getElementById('btnRebuy').addEventListener('click', () => {
      document.getElementById('rebuyModal').classList.remove('hidden');
    });
@@ -459,20 +450,10 @@ function selectWinner(pid) {
    document.getElementById('btnLeave').addEventListener('click', () => {
 
   // -- Borrow modal --
-  document.getElementById("btnBorrow").addEventListener("click", showBorrowModal);
-
-  document.getElementById("btnBorrowFromPlayer").addEventListener("click", () => {
-    const amt = parseInt(document.getElementById("borrowPlayerAmount").value) || 0;
-    const lid = document.getElementById("borrowLender").value;
-    if (amt <= 0 || !lid) return;
-    socket.emit("borrow_from_player", { lenderId: lid, amount: amt });
-    hideBorrowModal();
-  });
-
+  
+  
   // -- Loan records --
-  document.getElementById("btnLoanRecords").addEventListener("click", showLoanRecords);
-  document.getElementById("btnLoanClose").addEventListener("click", hideLoanRecords);
-
+    
      if (confirm('确定离开当前游戏？')) {
        window.location.reload();
      }

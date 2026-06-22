@@ -78,7 +78,7 @@
        chipPool: this.chipPool,
        loans: this.loans.slice(-50),
        gameSummary: this.gameEnded ? this.getSummary() : null,
-        currentPots: this.waitingWinner ? this.calculatePots() : null,
+        currentPots: this.waitingWinner ? (this._currentPots || this.calculatePots()) : null,
      };
    }
    broadcast() { io.to(this.code).emit('room_state', this.getState()); }
@@ -324,7 +324,7 @@
     }
 
 
-    if (this.street === "showdown") { this.waitingWinner = true; this.addLog("摊牌！请指定赢家"); this.broadcast(); return; }
+    if (this.street === "showdown") { this.waitingWinner = true; this._currentPots = this.calculatePots(); this._awardedAll = false; this.addLog("摊牌！请指定赢家"); this.broadcast(); return; }
 
     // Set first player post-flop: first active after dealer
     this.nextPlayerIndex = getNextIndex(this.players, this.dealerIndex);
