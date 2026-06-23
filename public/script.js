@@ -1,5 +1,5 @@
  let socket;
-window.onerror = function(msg) { document.getElementById("lobbyError").textContent = "JS错误: " + msg; };
+
 
  let playerId = null;
  let connected = false;
@@ -369,7 +369,7 @@ function selectWinner(pid) {
  }
  
  // ---------- Event Listeners ----------
- document.addEventListener('DOMContentLoaded', () => { document.title = "✅ JS运行正常";
+ document.addEventListener('DOMContentLoaded', () => { 
    connectSocket();
  
   document.getElementById("btnCreateRoom").addEventListener("click", () => {

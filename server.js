@@ -292,7 +292,7 @@
    }
  
    advanceStreet() {
-    // Collect all round bets into pot
+    this.players.forEach(p => { this.pot += p.roundBet; if (!p.handBet) p.handBet = 0; p.handBet += p.roundBet; p.roundBet = 0; p.hasActed = false; });
     this.players.forEach(p => { this.pot += p.roundBet; p.roundBet = 0; p.hasActed = false; });
 
     const inHand = this.handPlayers;
@@ -355,60 +355,6 @@
         }
       }
       prevLevel = level;
-    }
-    return pots;
-  }calculatePots() {
-    // Get non-folded players sorted by handBet
-    const nonFolded = this.players
-      .filter(p => !p.folded)
-      .sort((a, b) => (a.handBet || 0) - (b.handBet || 0));
-
-    const pots = [];
-    let prevLevel = 0;
-
-    for (const p of nonFolded) {
-      const level = p.handBet || 0;
-      if (level <= prevLevel) continue;
-      const diff = level - prevLevel;
-
-      // Use ALL players (including folded) to calculate pot amount
-      const totalContributors = this.players.filter(x => (x.handBet || 0) >= level).length;
-      const amount = diff * totalContributors;
-
-      // Only non-folded players can win
-      const eligible = nonFolded.filter(x => (x.handBet || 0) >= level).map(x => x.id);
-
-      if (amount > 0 && eligible.length > 0) {
-        pots.push({ amount, eligible, level });
-      }
-      prevLevel = level;
-    }
-
-    return pots;
-  }calculatePots() {
-    const bets = this.players
-      .filter(p => !p.folded)
-      .map(p => ({ id: p.id, name: p.name, totalBet: p.handBet || 0 }))
-      .sort((a, b) => a.totalBet - b.totalBet);
-    const pots = [];
-    let prevBet = 0;
-    let remainingPlayers = bets.length;
-    for (const b of bets) {
-      const diff = b.totalBet - prevBet;
-      if (diff > 0) {
-        const amount = diff * remainingPlayers;
-        const eligible = bets.filter(x => x.totalBet >= b.totalBet).map(x => x.id);
-        pots.push({ amount, eligible, level: b.totalBet });
-      }
-      prevBet = b.totalBet;
-      remainingPlayers--;
-      if (remainingPlayers <= 0) break;
-    }
-    // Merge pot amounts into the actual pot total
-    const totalInPots = pots.reduce((sum, p) => sum + p.amount, 0);
-    if (totalInPots > 0 && this.pot > 0 && totalInPots !== this.pot) {
-      // Add remainder to last pot
-      pots[pots.length - 1].amount += (this.pot - totalInPots);
     }
     return pots;
   }
