@@ -1,4 +1,6 @@
  let socket;
+window.onerror = function(msg) { document.getElementById("lobbyError").textContent = "JS错误: " + msg; };
+
  let playerId = null;
  let connected = false;
  let isHost = false;
@@ -6,7 +8,7 @@
  
  // ---------- Socket ----------
  function connectSocket() {
-   socket = io();
+  try { socket = io(); } catch(e) { console.error('io() failed:', e); return; }
  
    socket.on('connect', () => { connected = true; });
    socket.on('disconnect', () => { connected = false; });
@@ -367,14 +369,19 @@ function selectWinner(pid) {
  }
  
  // ---------- Event Listeners ----------
- document.addEventListener('DOMContentLoaded', () => {
+ document.addEventListener('DOMContentLoaded', () => { document.title = "✅ JS运行正常";
    connectSocket();
  
   document.getElementById("btnCreateRoom").addEventListener("click", () => {
-    const name = document.getElementById("inputHostName").value.trim();
-    if (!name) { document.getElementById("lobbyError").textContent = "请输入昵称"; return; }
-    document.getElementById("lobbyError").textContent = "";
-    socket.emit("create_room", { name });
+    try {
+      const name = document.getElementById("inputHostName").value.trim();
+      if (!name) { document.getElementById("lobbyError").textContent = "请输入昵称"; return; }
+      document.getElementById("lobbyError").textContent = "";
+      if (!socket) { document.getElementById("lobbyError").textContent = "连接未就绪，请刷新页面"; return; }
+      socket.emit("create_room", { name });
+    } catch(e) {
+      document.getElementById("lobbyError").textContent = "错误: " + e.message;
+    }
   });
  
    document.getElementById('btnJoinRoom').addEventListener('click', () => {
