@@ -333,6 +333,59 @@
     this.addLog("--- " + (streetNames[this.street] || this.street) + " 底池: " + this.pot + " ---");
   } 
   calculatePots() {
+    // Sort ALL players by handBet (including folded)
+    const allSorted = [...this.players].sort((a, b) => (a.handBet || 0) - (b.handBet || 0));
+    const pots = [];
+    let prevLevel = 0;
+    for (const p of allSorted) {
+      const level = p.handBet || 0;
+      if (level <= prevLevel) continue;
+      const diff = level - prevLevel;
+      // ALL players with handBet >= this level contributed
+      const totalContributors = this.players.filter(x => (x.handBet || 0) >= level).length;
+      const amount = diff * totalContributors;
+      // Only non-folded players with handBet >= level can win
+      const eligible = this.players.filter(x => !x.folded && (x.handBet || 0) >= level).map(x => x.id);
+      if (amount > 0) {
+        if (eligible.length > 0) {
+          pots.push({ amount, eligible, level });
+        } else if (pots.length > 0) {
+          // No one eligible at this level, merge into last pot
+          pots[pots.length - 1].amount += amount;
+        }
+      }
+      prevLevel = level;
+    }
+    return pots;
+  }calculatePots() {
+    // Get non-folded players sorted by handBet
+    const nonFolded = this.players
+      .filter(p => !p.folded)
+      .sort((a, b) => (a.handBet || 0) - (b.handBet || 0));
+
+    const pots = [];
+    let prevLevel = 0;
+
+    for (const p of nonFolded) {
+      const level = p.handBet || 0;
+      if (level <= prevLevel) continue;
+      const diff = level - prevLevel;
+
+      // Use ALL players (including folded) to calculate pot amount
+      const totalContributors = this.players.filter(x => (x.handBet || 0) >= level).length;
+      const amount = diff * totalContributors;
+
+      // Only non-folded players can win
+      const eligible = nonFolded.filter(x => (x.handBet || 0) >= level).map(x => x.id);
+
+      if (amount > 0 && eligible.length > 0) {
+        pots.push({ amount, eligible, level });
+      }
+      prevLevel = level;
+    }
+
+    return pots;
+  }calculatePots() {
     const bets = this.players
       .filter(p => !p.folded)
       .map(p => ({ id: p.id, name: p.name, totalBet: p.handBet || 0 }))
